@@ -24,7 +24,11 @@ class ApplicationController < ActionController::Base
       # subdomain = request.subdomain.to_s.gsub('.launch','')
       begin
         # @site = Site.find_by_domain_name!(subdomain)
-        @site = Site.find_site_from_orignal_url(request.original_url)
+        if Rails.env.development?
+            @site  = Site.find 2
+        else
+            @site = Site.find_site_from_orignal_url(request.original_url)
+        end
       rescue ActiveRecord::RecordNotFound
         # flash[:error] = "This record does not exist."
         # redirect_to(root_path(:subdomain => false))
@@ -43,7 +47,7 @@ class ApplicationController < ActionController::Base
     end
 
     if @site.nil? or @site.id == 1
-      @title = "LaunchGator - Create a viral Launching Soon page in minutes"
+      @title = "LaunchGator - Create a viral launching soon page in minutes"
     else
       @title  =  @site.name
     end
