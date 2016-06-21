@@ -34,6 +34,35 @@ class InvitesController < ApplicationController
 
   end
 
+  def mailchimp
+    omni_hash = request.env['omniauth.auth']
+    auth_token = omni_hash['credentials']['token']
+    dc = omni_hash['extra']['user_hash']['dc']
+    auth = omni_hash
+    @apikey = "#{auth_token}-#{dc}"
+    @hominid = Hominid::API.new(@apikey, {:secure => true})
+    @list = @hominid.lists["data"]
+    if  @hominid.lists['total']>0
+      subscription = MailchimpSubscription.create(:user_id => current_user.id,:api_key => @apikey)
+      @hominid.lists['data'].each do |list|
+        MailchimpList.create(:list_id => list['id'],:list_name => list['name'],:mailchimp_subscription_id => subscription.id)
+      end
+    end
+    redirect_to mailchimp_subscribe_path
+  end
+
+  def mailchimp_subscribe
+  end
+
+  def subscribe_user
+    hominid = Hominid::API.new(params[:api_key], {:secure => true})
+    list_id = params[:select_list]
+    sites = current_user.site.invites
+    sites.each do |site|
+      hominid.list_subscribe(list_id, site.email, {'FNAME' => site.email.split('@').first}, 'html', false, true, true, false)
+    end 
+  end  
+
   private
 
   def validate_referal_code
@@ -46,7 +75,7 @@ class InvitesController < ApplicationController
 
   def valid_site
     begin
-      @site = Site.find_by_id(params[:site_id])
+      @site = Site.find(params[:site_id])
     rescue ActiveRecord::RecordNotFound
       flash[:error] = "This record does not exist."
       redirect_to(root_path)
