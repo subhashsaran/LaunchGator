@@ -1,11 +1,11 @@
 module ApplicationHelper
-  def active_class(action,action_match)
-    if action == action_match
-      'signupbtn'
-    else
-      nil
-    end
-  end
+	def active_class(action,action_match)
+	  if action == action_match
+	    'signupbtn'
+	  else
+	    nil
+	  end
+	end
 
   def from_session_if_present(user)
     checked_email = session[:checked_email]
@@ -26,4 +26,15 @@ module ApplicationHelper
       site_url.active ? "active" : "inactive"
     end
   end
+
+  def mailchimp_text_url
+    current_user.mailchimp_subscriptions.size > 0 ? ["Mailchimp settings",mailchimp_subscribe_path] : ["Connect Mailchimp","http://launch.deskgator.com/auth/mailchimp"]
+  end
+
+  def fetch_list_for_user
+   subscription =  current_user.mailchimp_subscriptions.last
+   list = subscription.mailchimp_lists
+   return list,subscription.api_key
+  end 
+  
 end
