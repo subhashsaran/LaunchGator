@@ -10,6 +10,7 @@ class SitesController < ApplicationController
 
   def edit
     @site.build_image if @site.image.nil?
+    
     if params[:tab]
       @active_tab = params[:tab].split(" ")
       @active_tab = @active_tab[0]
